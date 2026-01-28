@@ -7,3 +7,11 @@
 .DS_Store
 store/*
 !store/.gitkeep
+
+# python files and dirs
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
