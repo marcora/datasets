@@ -7,10 +7,8 @@ from llama_index.embeddings.ollama import OllamaEmbedding
 # ---------------------------------------------------------------------
 
 OLLAMA_BASE_URL = "http://127.0.0.1:11434"
-
-# Pin explicit model versions for reproducibility
-LLM_MODEL_NAME = "llama3-7b"
-EMBED_MODEL_NAME = "nomic-embed-text-v1"
+EMBED_MODEL_NAME = "nomic-embed-text"
+LLM_MODEL_NAME = "llama3"
 
 # ---------------------------------------------------------------------
 # LlamaIndex global configuration
