@@ -106,7 +106,7 @@ async def ui():
 <html>
 <head>
 <meta charset="utf-8" />
-<title>Lab Knowledge Base Chatbot</title>
+<title>Goate lab datasets chatbot</title>
 <style>
 body {
   font-family: system-ui, sans-serif;
