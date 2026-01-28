@@ -1,0 +1,14 @@
+---
+title: "PBMC RNA-seq (10x Genomics v3)"
+assay: rna-seq
+organism: human
+tissue: PBMC
+cell_type: ["T cell", "B cell", "NK cell", "Monocyte"]
+platform: "10x Genomics v3"
+technology: "10x Chromium"
+tags: ["rna-seq", "PBMC", "10x"]
+categories: ["transcriptomics"]
+---
+This dataset contains single-cell RNA-seq data generated from human peripheral blood mononuclear cells (PBMCs) using the 10x Genomics Chromium v3 platform.
+
+The data was generated to study immune cell heterogeneity and baseline transcriptional programs across major PBMC populations. Standard QC metrics such as mitochondrial read fraction and UMI counts were applied prior to downstream analysis.

@@ -1,0 +1,14 @@
+---
+title: "T cell ChIP-seq (H3K27ac)"
+assay: chip-seq
+organism: human
+tissue: blood
+cell_type: "T cell"
+platform: "Illumina NextSeq"
+technology: "ChIP-seq"
+tags: ["chip-seq", "histone", "regulatory"]
+categories: ["epigenomics"]
+---
+ChIP-seq profiling of H3K27ac in primary human T cells.
+
+Used to identify active enhancer regions associated with immune activation.

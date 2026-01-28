@@ -1,0 +1,14 @@
+---
+title: "PBMC CITE-seq"
+assay: rna-seq
+organism: human
+tissue: PBMC
+cell_type: ["T cell", "B cell", "Monocyte"]
+platform: "10x Genomics v3"
+technology: "CITE-seq"
+tags: ["CITE-seq", "multimodal"]
+categories: ["transcriptomics", "multimodal"]
+---
+CITE-seq profiling of PBMCs combining RNA expression with surface protein measurements.
+
+Allows joint analysis of transcriptomic and immunophenotypic data.

@@ -1,0 +1,14 @@
+---
+title: "Immune Stimulation Time Course RNA-seq"
+assay: rna-seq
+organism: human
+tissue: blood
+cell_type: ["T cell"]
+platform: "Illumina NovaSeq"
+technology: "Bulk RNA-seq"
+tags: ["time-course", "immune", "stimulation"]
+categories: ["transcriptomics", "immunology"]
+---
+Bulk RNA-seq of stimulated human T cells across multiple time points.
+
+Designed to capture interferon response and cytokine-induced transcriptional dynamics.

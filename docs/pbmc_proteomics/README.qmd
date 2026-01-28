@@ -1,0 +1,14 @@
+---
+title: "PBMC Proteomics (Mass Spectrometry)"
+assay: proteomics
+organism: human
+tissue: PBMC
+cell_type: ["T cell", "B cell"]
+platform: "Orbitrap"
+technology: "LC-MS/MS"
+tags: ["proteomics", "mass-spec"]
+categories: ["proteomics"]
+---
+Proteomic profiling of PBMC samples using high-resolution mass spectrometry.
+
+Protein abundance was quantified to complement transcriptomic measurements and assess post-transcriptional regulation.

@@ -1,0 +1,14 @@
+---
+title: "Tumor Microenvironment scRNA-seq"
+assay: rna-seq
+organism: human
+tissue: tumor
+cell_type: ["Tumor cell", "T cell", "Macrophage"]
+platform: "10x Genomics v3"
+technology: "10x Chromium"
+tags: ["cancer", "tumor", "immune"]
+categories: ["oncology", "transcriptomics"]
+---
+Single-cell RNA-seq of solid tumor biopsies to study the tumor microenvironment.
+
+The dataset captures both malignant cells and infiltrating immune populations, enabling analysis of immune suppression and activation pathways.

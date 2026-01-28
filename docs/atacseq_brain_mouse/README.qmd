@@ -1,0 +1,16 @@
+---
+title: "Mouse Brain ATAC-seq"
+assay: atac-seq
+organism: mouse
+tissue: brain
+cell_type: ["Neuron"]
+platform: "Omni-ATAC"
+technology: "Bulk ATAC-seq"
+tags: ["brain", "chromatin"]
+categories: ["epigenomics", "neuroscience"]
+---
+Bulk ATAC-seq of mouse brain tissue to profile chromatin accessibility.
+
+Focuses on regulatory element usage in neuronal populations.
+
+MAGICBRAIN123

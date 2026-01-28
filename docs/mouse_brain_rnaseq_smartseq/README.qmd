@@ -1,0 +1,14 @@
+---
+title: "Mouse Brain RNA-seq (Smart-seq2)"
+assay: rna-seq
+organism: mouse
+tissue: brain
+cell_type: ["Neuron", "Astrocyte", "Oligodendrocyte"]
+platform: "Smart-seq2"
+technology: "Full-length RNA-seq"
+tags: ["brain", "neurons", "smart-seq"]
+categories: ["transcriptomics", "neuroscience"]
+---
+Bulk and single-cell RNA sequencing of mouse brain tissue using Smart-seq2.
+
+This dataset emphasizes full-length transcript coverage and isoform-level expression analysis in neuronal and glial populations.

@@ -1,0 +1,14 @@
+---
+title: "PBMC ATAC-seq (10x Genomics)"
+assay: atac-seq
+organism: human
+tissue: PBMC
+cell_type: ["T cell", "B cell"]
+platform: "10x Genomics ATAC"
+technology: "10x Chromium"
+tags: ["atac-seq", "chromatin", "PBMC"]
+categories: ["epigenomics"]
+---
+Single-cell ATAC-seq profiling of human PBMCs to assess chromatin accessibility across immune cell types.
+
+This dataset enables the identification of regulatory regions and transcription factor motif enrichment associated with immune activation states.

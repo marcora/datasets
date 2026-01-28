@@ -1,0 +1,32 @@
+[workspace]
+authors = ["Edoardo Marcora <edoardo.marcora@gmail.com>"]
+channels = ["conda-forge"]
+name = "datasets"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+build-index = "python -m app.build_index"
+serve = "uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+python = "python"
+
+[dependencies]
+python = ">=3.11,<3.13"
+
+# Web API
+fastapi = "*"
+uvicorn = "*"          # <-- changed from "standard"
+
+# Parsing / data
+pyyaml = "*"
+pandas = "*"
+openpyxl = "*"
+
+# Dev convenience
+ipython = "*"
+
+[pypi-dependencies]
+# LlamaIndex from PyPI (safer / more up-to-date than conda-forge)
+llama-index-core = "*"
+llama-index-llms-ollama = "*"
+llama-index-embeddings-ollama = "*"

@@ -1,0 +1,14 @@
+---
+title: "PBMC Single-cell Multiome"
+assay: ["rna-seq", "atac-seq"]
+organism: human
+tissue: PBMC
+cell_type: ["T cell", "B cell"]
+platform: "10x Genomics Multiome"
+technology: "Multiome"
+tags: ["multiome", "rna-seq", "atac-seq"]
+categories: ["multimodal", "epigenomics"]
+---
+Single-cell multiome dataset combining RNA-seq and ATAC-seq from PBMCs.
+
+Supports joint analysis of gene expression and chromatin accessibility at single-cell resolution.

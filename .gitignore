@@ -1,0 +1,9 @@
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+
+# other files and dirs
+.DS_Store
+store/*
+!store/.gitkeep

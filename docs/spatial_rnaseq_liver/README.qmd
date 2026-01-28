@@ -1,0 +1,14 @@
+---
+title: "Spatial Transcriptomics of Human Liver"
+assay: rna-seq
+organism: human
+tissue: liver
+cell_type: hepatocyte
+platform: "10x Visium"
+technology: "Spatial transcriptomics"
+tags: ["spatial", "liver"]
+categories: ["transcriptomics", "spatial"]
+---
+Spatially resolved RNA-seq of human liver sections using the 10x Visium platform.
+
+Enables mapping of metabolic zonation across liver lobules.

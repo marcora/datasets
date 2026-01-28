@@ -1,0 +1,14 @@
+---
+title: "Human Liver Bulk RNA-seq"
+assay: rna-seq
+organism: human
+tissue: liver
+cell_type: hepatocyte
+platform: "Illumina NovaSeq"
+technology: "Bulk RNA-seq"
+tags: ["bulk", "liver"]
+categories: ["transcriptomics"]
+---
+Bulk RNA-seq of healthy human liver samples.
+
+Designed to characterize metabolic gene expression programs and baseline hepatic transcriptional activity.
