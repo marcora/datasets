@@ -150,7 +150,7 @@ body {
 </style>
 </head>
 <body>
-<h1>Lab Knowledge Base Chatbot</h1>
+<h1>Goate lab datasets chatbot</h1>
 
 <div id="chat"></div>
 <div id="sources"></div>
