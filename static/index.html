@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Goate lab datasets chatbot</title>
+
+        <!-- Alpine -->
+        <script
+            defer
+            src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+        ></script>
+
+        <!-- Markdown -> HTML -->
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+        <!-- Sanitize HTML (important!) -->
+        <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+
+        <!-- Optional: code highlighting -->
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css"
+        />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+        <style>
+            body {
+                font-family: system-ui, sans-serif;
+                max-width: 900px;
+                margin: 2rem auto;
+            }
+            #chat {
+                border: 1px solid #ccc;
+                padding: 1rem;
+                height: 60vh;
+                overflow: auto;
+            }
+            .msg {
+                margin: 0.5rem 0;
+            }
+            .user {
+                text-align: right;
+            }
+            .assistant {
+                text-align: left;
+            }
+            .bubble {
+                display: inline-block;
+                padding: 0.4rem 0.7rem;
+                border-radius: 8px;
+                max-width: 80%;
+                white-space: pre-wrap;
+            }
+            .user .bubble {
+                background: #d9edf7;
+            }
+            .assistant .bubble {
+                background: #f5f5f5;
+            }
+            pre {
+                background: #f3f3f3;
+                padding: 0.6rem;
+                border-radius: 6px;
+                overflow: auto;
+            }
+        </style>
+    </head>
+    <body x-data="chatbot()">
+        <h1>Goate lab datasets chatbot</h1>
+
+        <div id="chat">
+            <!-- message list -->
+            <template x-for="msg in messages" :key="msg.id">
+                <div class="msg" :class="msg.role">
+                    <!-- For user messages render plain text (escape) -->
+                    <div
+                        class="bubble user"
+                        x-show="msg.role === 'user'"
+                        x-text="msg.text"
+                    ></div>
+
+                    <!-- For assistant messages render markdown safely -->
+                    <div
+                        class="bubble assistant"
+                        x-show="msg.role === 'assistant'"
+                        x-html="renderMarkdown(msg.text)"
+                    ></div>
+                </div>
+            </template>
+        </div>
+
+        <div id="sources" x-text="sources"></div>
+
+        <form @submit.prevent="send">
+            <input
+                x-model="input"
+                placeholder="Ask about datasets, samples, QC…"
+                style="width: 80%"
+            />
+            <button>Send</button>
+        </form>
+
+        <script>
+            function chatbot() {
+                return {
+                    input: "",
+                    messages: [],
+                    sources: "",
+
+                    // Render markdown -> sanitized HTML, apply syntax highlighting
+                    renderMarkdown(raw) {
+                        if (!raw) return "";
+                        // Convert markdown to HTML
+                        const html = marked.parse(raw, {
+                            gfm: true,
+                            breaks: true,
+                        });
+
+                        // Optional: post-process to add target="_blank" for links
+                        // (DOMPurify will keep attributes you allow below)
+                        const doc = new DOMParser().parseFromString(
+                            html,
+                            "text/html",
+                        );
+                        doc.querySelectorAll("a").forEach((a) => {
+                            a.setAttribute("target", "_blank");
+                            a.setAttribute("rel", "noopener noreferrer");
+                        });
+                        const withLinkTargets = doc.body.innerHTML;
+
+                        // Sanitize
+                        const clean = DOMPurify.sanitize(withLinkTargets, {
+                            ALLOWED_ATTR: [
+                                "href",
+                                "target",
+                                "rel",
+                                "class",
+                                "id",
+                                "src",
+                                "alt",
+                                "title",
+                                "aria-hidden",
+                            ],
+                        });
+
+                        // Syntax highlight code blocks (highlight.js expects elements in DOM)
+                        // Create a temporary container to run highlighting then return innerHTML
+                        const tmp = document.createElement("div");
+                        tmp.innerHTML = clean;
+                        tmp.querySelectorAll("pre code").forEach((block) => {
+                            // let highlight.js auto-detect language
+                            try {
+                                hljs.highlightElement(block);
+                            } catch (e) {
+                                /* ignore */
+                            }
+                        });
+
+                        return tmp.innerHTML;
+                    },
+
+                    async send() {
+                        if (!this.input) return;
+                        const question = this.input;
+                        this.messages.push({
+                            id: Date.now(),
+                            role: "user",
+                            text: question,
+                        });
+                        this.input = "";
+                        this.sources = "";
+
+                        try {
+                            const resp = await fetch("/chat", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ message: question }),
+                            });
+                            const data = await resp.json();
+
+                            // data.answer is expected to be Markdown (or plain text)
+                            this.messages.push({
+                                id: Date.now() + 1,
+                                role: "assistant",
+                                text: data.answer || "[no answer]",
+                            });
+
+                            if (data.sources && data.sources.length > 0) {
+                                this.sources =
+                                    "Sources:\n" +
+                                    data.sources
+                                        .map(
+                                            (s) =>
+                                                `• ${s.dataset_id} (${s.source_type}` +
+                                                (s.section_title
+                                                    ? `, ${s.section_title}`
+                                                    : "") +
+                                                (s.sample_id
+                                                    ? `, sample ${s.sample_id}`
+                                                    : "") +
+                                                ")",
+                                        )
+                                        .join("\n");
+                            }
+
+                            // scroll to bottom
+                            this.$nextTick(() => {
+                                const chat = document.getElementById("chat");
+                                chat.scrollTop = chat.scrollHeight;
+                            });
+                        } catch (e) {
+                            this.messages.push({
+                                id: Date.now() + 2,
+                                role: "assistant",
+                                text: "Error contacting server.",
+                            });
+                            console.error(e);
+                        }
+                    },
+                };
+            }
+        </script>
+    </body>
+</html>

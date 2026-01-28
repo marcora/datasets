@@ -1,18 +1,37 @@
-import traceback
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional, Dict
 
-from app.config import configure_llamaindex
+import traceback
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
-from llama_index.core import StorageContext, load_index_from_storage
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from llama_index.core import StorageContext, load_index_from_storage
+
+from app.config import configure_llamaindex
+
+# ---------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------
+
 STORE_DIR = Path("store")
+STATIC_DIR = Path("static")
+
+# ---------------------------------------------------------------------
+# FastAPI app
+# ---------------------------------------------------------------------
 
 app = FastAPI(title="Lab Knowledge Base Chatbot")
 chat_engine = None
 
+# Serve static files (for Alpine.js UI)
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+
+# ---------------------------------------------------------------------
+# Pydantic models
+# ---------------------------------------------------------------------
 
 class ChatRequest(BaseModel):
     message: str
@@ -31,19 +50,25 @@ class ChatResponse(BaseModel):
     sources: List[SourceItem]
 
 
+# ---------------------------------------------------------------------
+# Startup: configure LlamaIndex and load index
+# ---------------------------------------------------------------------
+
 @app.on_event("startup")
-def startup():
+def startup() -> None:
     global chat_engine
 
-    print("[startup] Configuring LlamaIndex and loading index...")
+    print("[startup] Configuring LlamaIndex...")
     configure_llamaindex()
 
-    storage_context = StorageContext.from_defaults(persist_dir=str(STORE_DIR))
+    print(f"[startup] Loading index from {STORE_DIR}...")
+    storage_context = StorageContext.from_defaults(
+        persist_dir=str(STORE_DIR)
+    )
     index = load_index_from_storage(storage_context)
-    print("[startup] Index loaded from", STORE_DIR)
 
-    # use condense_plus_context so we can set system_prompt
-    chat_engine = index.as_chat_engine(
+    # Use condense_plus_context so we can keep a system prompt
+    chat_engine_local = index.as_chat_engine(
         chat_mode="condense_plus_context",
         similarity_top_k=8,
         system_prompt=(
@@ -52,12 +77,37 @@ def startup():
             "If the information is not present, say you do not know."
         ),
     )
+
+    chat_engine = chat_engine_local
     print("[startup] Chat engine initialized.")
 
 
+# ---------------------------------------------------------------------
+# Root: serve Alpine.js UI
+# ---------------------------------------------------------------------
+
+@app.get("/")
+async def root() -> FileResponse:
+    """
+    Serve the static Alpine.js chat UI.
+    """
+    index_path = STATIC_DIR / "index.html"
+    return FileResponse(str(index_path))
+
+
+# ---------------------------------------------------------------------
+# Chat endpoint
+# ---------------------------------------------------------------------
+
 @app.post("/chat", response_model=ChatResponse)
-async def chat(req: ChatRequest):
+async def chat(req: ChatRequest) -> ChatResponse:
+    """
+    Chat endpoint used by the Alpine.js frontend.
+    Expects: { "message": "..." }
+    Returns: { "answer": "...", "sources": [...] }
+    """
     global chat_engine
+
     if chat_engine is None:
         return ChatResponse(
             answer="Error: chat engine not initialized.",
@@ -69,6 +119,7 @@ async def chat(req: ChatRequest):
         result = chat_engine.chat(req.message)
         print("[chat] LLM response obtained.")
 
+        # Collect unique sources
         sources: Dict[str, SourceItem] = {}
         for node in result.source_nodes:
             meta = node.metadata or {}
@@ -90,6 +141,7 @@ async def chat(req: ChatRequest):
             answer=result.response,
             sources=list(sources.values()),
         )
+
     except Exception as e:
         print("[chat] ERROR during chat:")
         traceback.print_exc()
@@ -97,123 +149,3 @@ async def chat(req: ChatRequest):
             answer=f"Error during chat: {e}",
             sources=[],
         )
-
-
-@app.get("/", response_class=HTMLResponse)
-async def ui():
-    return """
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8" />
-<title>Goate lab datasets chatbot</title>
-<style>
-body {
-  font-family: system-ui, sans-serif;
-  max-width: 900px;
-  margin: 2rem auto;
-}
-#chat {
-  border: 1px solid #ccc;
-  padding: 1rem;
-  height: 60vh;
-  overflow-y: auto;
-}
-.msg {
-  margin: 0.5rem 0;
-}
-.user {
-  text-align: right;
-}
-.assistant {
-  text-align: left;
-}
-.bubble {
-  display: inline-block;
-  padding: 0.4rem 0.7rem;
-  border-radius: 8px;
-  max-width: 80%;
-  white-space: pre-wrap;
-}
-.user.bubble {
-  background: #d9edf7;
-}
-.assistant.bubble {
-  background: #f5f5f5;
-}
-#sources {
-  margin-top: 0.5rem;
-  font-size: 0.9em;
-  color: #555;
-  white-space: pre-wrap;
-}
-</style>
-</head>
-<body>
-<h1>Goate lab datasets chatbot</h1>
-
-<div id="chat"></div>
-<div id="sources"></div>
-
-<form id="form">
-  <input
-    id="input"
-    style="width:80%"
-    placeholder="Ask about datasets, samples, QC, protocols…"
-  />
-  <button>Send</button>
-</form>
-
-<script>
-const chat = document.getElementById("chat");
-const sourcesDiv = document.getElementById("sources");
-const input = document.getElementById("input");
-
-function addMessage(role, text) {
-  const div = document.createElement("div");
-  div.className = "msg " + role;
-  const bubble = document.createElement("div");
-  bubble.className = "bubble " + role;
-  bubble.textContent = text;
-  div.appendChild(bubble);
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-document.getElementById("form").onsubmit = async (e) => {
-  e.preventDefault();
-  const q = input.value.trim();
-  if (!q) return;
-
-  addMessage("user", q);
-  input.value = "";
-  sourcesDiv.textContent = "";
-
-  try {
-    const resp = await fetch("/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: q })
-    });
-
-    const data = await resp.json();
-    addMessage("assistant", data.answer || "[no answer]");
-
-    if (data.sources && data.sources.length > 0) {
-      const lines = data.sources.map(s =>
-        `• dataset: ${s.dataset_id}` +
-        ` (type: ${s.source_type}` +
-        (s.section_title ? `, section: ${s.section_title}` : "") +
-        (s.sample_id ? `, sample: ${s.sample_id}` : "") +
-        `)`
-      );
-      sourcesDiv.textContent = "Sources:\\n" + lines.join("\\n");
-    }
-  } catch (err) {
-    addMessage("assistant", "Error calling /chat: " + err);
-  }
-};
-</script>
-</body>
-</html>
-"""
