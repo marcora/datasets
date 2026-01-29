@@ -86,8 +86,14 @@ def startup() -> None:
                 chat_mode="condense_plus_context",
                 similarity_top_k=8,
                 system_prompt=(
-                    "You are a helpful lab assistant for internal biology and genomics datasets. "
-                    "Answer using only the provided retrieved context. If the information is not present, say you do not know."
+                    "You are a helpful lab assistant for internal biology and genomics datasets "
+                    "from the Goate lab. Answer using only the provided retrieved context. "
+                    "If the information is not present, say you do not know.\n\n"
+                    "When you refer to a specific dataset in your answer, format it as:\n"
+                    "**<dataset title>** (`<dataset_id>`)\n"
+                    "For example: **PBMC 10x RNA-seq** (`pbmc_rnaseq_10x`). "
+                    "Use the dataset title and dataset_id that you see in the context or metadata "
+                    "(for example, lines like 'Dataset: <title> (id: <dataset_id>)' or 'dataset_id' fields)."
                 ),
             )
             print("[startup] Chat engine initialized.")
@@ -132,7 +138,11 @@ async def chat(req: ChatRequest) -> ChatResponse:
     try:
         result = chat_engine.chat(q)
         # result may be a ChatResponse-like object from LlamaIndex; adapt
-        answer_text = getattr(result, "response", None) or getattr(result, "answer", None) or getattr(result, "text", "")
+        answer_text = (
+            getattr(result, "response", None)
+            or getattr(result, "answer", None)
+            or getattr(result, "text", "")
+        )
         if answer_text is None:
             answer_text = ""
 
@@ -177,10 +187,17 @@ async def get_dataset(dataset_id: str) -> DatasetDetail:
     readme_path = dataset_dir / "README.qmd"
 
     if not readme_path.exists():
-        raise HTTPException(status_code=404, detail=f"README.qmd not found for dataset {dataset_id!r}")
+        raise HTTPException(
+            status_code=404,
+            detail=f"README.qmd not found for dataset {dataset_id!r}",
+        )
 
     meta, body = parse_qmd(readme_path)
-    return DatasetDetail(dataset_id=dataset_id, metadata=meta or {}, body_markdown=body or "")
+    return DatasetDetail(
+        dataset_id=dataset_id,
+        metadata=meta or {},
+        body_markdown=body or "",
+    )
 
 
 # ---------------------------------------------------------------------
@@ -189,8 +206,10 @@ async def get_dataset(dataset_id: str) -> DatasetDetail:
 
 @app.get("/health")
 async def health():
-    return JSONResponse(content={
-        "ok": True,
-        "index_loaded": index is not None,
-        "chat_engine": chat_engine is not None,
-    })
+  return JSONResponse(
+      content={
+          "ok": True,
+          "index_loaded": index is not None,
+          "chat_engine": chat_engine is not None,
+      }
+  )
