@@ -25,7 +25,7 @@ STATIC_DIR = Path("static")
 # FastAPI app
 # ---------------------------------------------------------------------
 
-app = FastAPI(title="Lab Knowledge Base Chatbot")
+app = FastAPI(title="Chat with the Goate lab datasets")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Global state
